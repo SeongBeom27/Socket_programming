@@ -12,7 +12,7 @@
 #define BUFSIZE 30
 void error_handling(char *message);
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv[])
 {
     int sock;
     char message[BUFSIZE];

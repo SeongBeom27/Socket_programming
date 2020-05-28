@@ -53,8 +53,8 @@ int main(int argc, char **argv)
 
 	while((str_len = read(clnt_sock, message, BUFSIZE)) != 0)
 	{
-		write(clnt_sock, message, str_len);
-		write(1 , message, str_len);
+		write(clnt_sock, message, str_len);	// send message written by "message" to client
+		write(1 , message, str_len);		// 1 file_descriptor show log screen "message"
 	}
 	close(clnt_sock);
 

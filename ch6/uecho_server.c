@@ -1,5 +1,5 @@
 /*
-	UDP_server
+	shutdown_server
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,22 +14,26 @@ void error_handling(char *message);
 
 int main(int argc, char **argv)
 {
-    int serv_sock;
-    char message[BUFSIZE];
-    int str_len;
+	int fd;
+	int sd;		// server socket descriptor
 
+	char buf[BUFSIZE];
     struct sockaddr_in serv_addr;
-    struct sockaddr_in clnt_addr;
-    int clnt_addr_size;
+	int len;
 
-    if(argc != 2)
+    if(argc != 3)
     {
         printf("Usage : %s <port>\n", argv[0]);     // when don't input port number
         exit(1);
     }
+	
+	/*File recevied from server open to store */
+	fd = open("receive.dat", O_WRONLY|O_CREAT|O_TRUNC);
+	if(fd == -1)
+		error_handling("File open error");
 
-    serv_sock=socket(PF_INET, SOCK_DGRAM, 0);
-    if(serv_sock == -1)
+    sd=socket(PF_INET, SOCK_DGRAM, 0);
+    if(sd == -1)
         error_handling("socket() error");
 
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -37,19 +41,19 @@ int main(int argc, char **argv)
     serv_addr.sin_addr.s_addr=htonl(INADDR_ANY);
     serv_addr.sin_port=htons(atoi(argv[1]));
 
-    if(bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) == -1)
+    if(bind(sd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) == -1)
         error_handling("bind() error");
 
-	while(1)
-	{
-		clnt_addr_size = sizeof(clnt_addr);
-		str_len = recvfrom(serv_sock, message, BUFSIZE, 0, (struct sockaddr*) &clnt_addr, &clnt_addr_size);
+	if(connect(sd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
+		error_handling("connect() error!");
 
-		printf("%s\n", message);
-		sendto(serv_sock, message, str_len, 0, (struct sockaddr*) &clnt_addr, sizeof(clnt_addr));
+	while((len ==read(sd,buf,BUFSIZE)) != 0)
+	{
+		write(fd, buf, len);
 	}
 
-	close(serv_sock);
+	close(fd);
+	close(sd);
     return 0;
 }
 
